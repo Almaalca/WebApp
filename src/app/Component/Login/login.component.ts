@@ -1,5 +1,9 @@
-import { Component } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component,Input } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpClientModule} from '@angular/common/http';
+import {User} from '../../Model/user.model'
+import { Router } from "@angular/router";
+import {LocalService} from '../../Model/local.model'
+
 
 
 
@@ -16,10 +20,11 @@ export class Login {
   isError= false;
   current =false;
   error="";
-  token="";
+  user:User;
 
-  constructor(private httpClient: HttpClient) {};
 
+  constructor(private httpClient: HttpClient, private router: Router,private localService: LocalService) {};
+  
 
  sendRequestPost(email,password,app){
 
@@ -41,10 +46,19 @@ export class Login {
 
   this.httpClient.put(apiURL,{},httpOptions).subscribe(
     data  => {
-      console.log("POST Request is successful ", data);
       this.current =true;
       this.isError =false;
-      this.token=data['sessionTokenBck'];
+      var token=data['sessionTokenBck'];
+      this.user = new User(email,"contacto%40tuten.cl",true,app,token);
+      this.localService.updateUser(this.user);
+      this.router.navigateByUrl("/datagrids").then(e => {
+        if (e) {
+          console.log("Navigation is successful!");
+        } else {
+          console.log("Navigation has failed!");
+        }
+      });
+
 
     }, error  => {//por seguridad no se especifica al usuario el error.
       this.error = "Usuario Incorrecto!"
